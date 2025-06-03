@@ -1,4 +1,5 @@
 # GPU Health Check Dashboard
+Copyright 2025 Fluid Numerics
 
 ## Installation
 Create and activate conda env
