@@ -15,12 +15,38 @@ status_dict = {
     2: "Unhealthy",
 }
 
-sim_health_check_time = 5
+sim_health_check_time = 4
 
 
 ####################
 # HELPER FUNCTIONS #
 ####################
+def hc_dummy(status_file):
+    """
+    Dummy health check function that simulates a health check.
+    It randomly returns either 0 (healthy) or 2 (unhealthy) after a delay.
+    """
+    sleep(sim_health_check_time)  # Simulate a delay for the health check
+    outcome = randint(0, 100)
+    status = 0 if outcome < 90 else 2  # Healthy if outcome < 90, Unhealthy otherwise
+    with open(status_file, "w") as f:
+        f.write(str(status))
+
+    return status
+
+
+def hc_rocm_amdgpu_bench(status_file):
+    """
+    ROCm AMD GPU benchmark health check.
+    Calls `rocm_amdgpu_bench` command to check GPU health.
+    """
+    # For now, use sister binary `./rocm-amdgpu-bench`
+    # Parse output
+
+
+hc_type_dict = {
+    "dummy": hc_dummy,
+}
 
 
 ###########
@@ -37,8 +63,12 @@ class HealthCheckLogger:
         if self.printout:
             print(message)
 
-    def log_gpu(self, node, gpu, status):
+    def log_gpu_status(self, node, gpu, status):
         message = f"Node: {node}, GPU: {gpu}, Status: {status} ({status_dict[status]})"
+        self.log(message)
+
+    def log_health_check(self, hc_type, node, gpu):
+        message = f"Health Check Type: {hc_type}, Node: {node}, GPU: {gpu}"
         self.log(message)
 
 
@@ -51,7 +81,7 @@ class HealthCheck:
         self.base_path = "nodes"
 
     # Perform health check for all GPUs on all nodes
-    def health_check(self, node, gpu):
+    def health_check(self, hc_type, node, gpu):
         node_path = os.path.join(self.base_path, f"node{node}")
         gpu_path = os.path.join(node_path, f"gpu{gpu}")
         status_file = os.path.join(gpu_path, "current_status")
@@ -59,17 +89,25 @@ class HealthCheck:
         with open(status_file, "w") as f:
             f.write(str(1))  # Set to 1 during health check
 
-        sleep(sim_health_check_time)  # Simulate a delay for the health check
-        outcome = randint(0, 100)
-        # Healthy if outcome < 90, Unhealthy otherwise
+        # sleep(sim_health_check_time)  # Simulate a delay for the health check
+
+        self.logger.log_health_check(hc_type, node, gpu)
+
+        # Switch cases for hc_type
+        if hc_type == "dummy":
+            status = hc_dummy(status_file)
+        else:
+            unknown_hc_type_message = f"Unknown health check type: {hc_type}"
+            self.logger.log(unknown_hc_type_message)
+            raise ValueError(unknown_hc_type_message)
+
         with open(status_file, "w") as f:
-            status = 0 if outcome < 90 else 2
             f.write(str(status))
 
-        self.logger.log_gpu(node, gpu, status)
+        self.logger.log_gpu_status(node, gpu, status)
 
     # Check all GPUs on all nodes
-    def check_all(self):
+    def check_all(self, hc_type):
         num_nodes_found = len(os.listdir(self.base_path))
 
         # Check if number of nodes matches num_nodes
@@ -78,10 +116,10 @@ class HealthCheck:
             return
 
         for node in range(num_nodes_found):
-            self.check_one_node(node)
+            self.check_one_node(hc_type, node)
 
     # Check all GPUs on a specific node
-    def check_one_node(self, node):
+    def check_one_node(self, hc_type, node):
         node_path = os.path.join(self.base_path, f"node{node}")
         gpu_directories = len(os.listdir(node_path))
 
@@ -91,11 +129,11 @@ class HealthCheck:
             return
 
         for gpu in range(gpus_per_node):
-            self.check_one_gpu(node, gpu)
+            self.check_one_gpu(hc_type, node, gpu)
 
     # Check one GPU
-    def check_one_gpu(self, node, gpu):
-        self.health_check(node, gpu)
+    def check_one_gpu(self, hc_type, node, gpu):
+        self.health_check(hc_type, node, gpu)
 
 
 ########
@@ -121,6 +159,14 @@ def main():
         type=int,
         help="Specify a GPU to check health status. Requires --node to be specified.",
     )
+    # Add argument to specify which type of health check to perform
+    parser.add_argument(
+        "--type",
+        type=str,
+        default="dummy",
+        choices=["dummy"],
+        help="Specify the type of health check to perform (default: dummy).",
+    )
 
     args = parser.parse_args()
 
@@ -128,11 +174,11 @@ def main():
     health_checker = HealthCheck()
 
     if args.node is not None and args.gpu is not None:
-        health_checker.check_one_gpu(args.node, args.gpu)
+        health_checker.check_one_gpu(args.type, args.node, args.gpu)
     elif args.node is not None:
-        health_checker.check_one_node(args.node)
+        health_checker.check_one_node(args.type, args.node)
     elif args.all:
-        health_checker.check_all()
+        health_checker.check_all(args.type)
     else:
         print(
             "Please specify --all, --node <node_id>, or both --node <node_id> and --gpu <gpu_id>."
