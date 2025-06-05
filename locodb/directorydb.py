@@ -173,6 +173,8 @@ if __name__ == "__main__":
     collection = database["gpu1"]
     collection.insert_one(
         {
+            "vendor": "AMD",
+            "model": "MI300X",
             "vram_total": 192,
             "vram_used": 23.294,
         }
