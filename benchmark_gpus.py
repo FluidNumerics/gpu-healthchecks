@@ -1,0 +1,154 @@
+# Python file to run `rocm-amdgpu-bench` command for GPU health checks.
+# and parses the output into a json
+
+# run `rocm-amdgpu-bench` command and parse the output
+import subprocess
+import os
+
+# from locodb.utility import get_timestamp
+from locodb.directorydb import *
+
+
+def benchmark_node(node_index):
+    """
+    Run the `rocm-amdgpu-bench` command and parse its output.
+    Returns a dictionary with GPU health status.
+    """
+
+    # timestamp = get_timestamp()
+    path_to_bin = "rocm-amdgpu-bench/build/roofline"
+
+    # Run the command
+    print("Running rocm-amdgpu-bench...")
+    # If temp.log is present, just read from that
+    if os.path.exists("temp.log"):
+        print("Using existing temp.log file.")
+        with open("temp.log", "r") as log_file:
+            output = log_file.read()
+    else:
+        result = subprocess.run(
+            [f"./{path_to_bin}"], capture_output=True, text=True, check=True
+        )
+        output = result.stdout
+    print("Finished running rocm-amdgpu-bench.")
+
+    # Log output as parsed
+    if not os.path.exists("temp.log"):
+        with open("temp.log", "w") as log_file:
+            log_file.write(output)
+
+    # Convert into list of lines
+    # Remove blank lines
+    # Remove all lines that contain "%""
+    lines = output.splitlines()
+    lines = [line for line in lines if line.strip()]
+    lines = [line for line in lines if "%" not in line]
+
+    all_gpu_data = []
+
+    for line in lines:
+        line_split = line.split()
+        if "GPU Device " in line:
+            if line_split[2] != "0":
+                all_gpu_data.append(gpu_data)  # Save previous GPU data
+            gpu_data = {}
+            gpu_data["GPU Device"] = int(line_split[2])
+            gpu_data["gfx_version"] = line_split[3][1:-1]  # Remove parentheses
+            gpu_data["CUs"] = int(line_split[5])
+        # Bandwidths
+        elif line_split[1] == "BW,":
+            bw_type = " ".join(line_split[:2])  # e.g., "HBM BW"
+            gpu_data[bw_type] = {
+                "workgroupSize": int(line_split[5].split(":")[1][:-1]),
+                "workgroups": int(line_split[6].split(":")[1][:-1]),
+                "experiments": int(line_split[7].split(":")[1][:-1]),
+                "traffic": int(line_split[8].split(":")[1].replace("bytes,", "")),
+                "duration": float(line_split[10].split(":")[1].replace("ms,", "")),
+                "mean": float(line_split[12].split(":")[1].replace("GB/sec,", "")),
+                "stdev": float(line_split[14].split("=")[1].replace("GB/sec", "")),
+            }
+        # Peak FLOPs
+        elif line_split[1] == "FLOPs":
+            flops_type = " ".join(line_split[:3])  # e.g., "Peak FLOPs (FP8)"
+            gpu_data[flops_type] = {
+                "workgroupSize": int(line_split[6].split(":")[1][:-1]),
+                "workgroups": int(line_split[7].split(":")[1][:-1]),
+                "experiments": int(line_split[8].split(":")[1][:-1]),
+                "FLOP": int(line_split[9].split(":")[1][:-1]),
+                "duration": float(line_split[10].split(":")[1].replace("ms,", "")),
+                "mean": float(line_split[12].split(":")[1].replace("GFLOPS,", "")),
+                "stdev": float(line_split[14].split("=")[1].replace("GFLOPS", "")),
+            }
+        # Peak IOPs
+        elif line_split[1] == "IOPs":
+            iops_type = " ".join(line_split[:3])  # e.g., "Peak IOPs (INT8)"
+            gpu_data[iops_type] = {
+                "workgroupSize": int(line_split[6].split(":")[1][:-1]),
+                "workgroups": int(line_split[7].split(":")[1][:-1]),
+                "experiments": int(line_split[8].split(":")[1][:-1]),
+                "IOP": int(line_split[9].split(":")[1][:-1]),
+                "duration": float(line_split[10].split(":")[1].replace("ms,", "")),
+                "mean": float(line_split[12].split(":")[1].replace("GOPS,", "")),
+                "stdev": float(line_split[14].split("=")[1].replace("GOPS", "")),
+            }
+        # Peak MFMA FLOPs
+        elif line_split[1] == "MFMA" and "FLOPs" in line:
+            mfma_flops_type = " ".join(line_split[:4])
+            gpu_data[mfma_flops_type] = {
+                "workgroupSize": int(line_split[7].split(":")[1][:-1]),
+                "workgroups": int(line_split[8].split(":")[1][:-1]),
+                "experiments": int(line_split[9].split(":")[1][:-1]),
+                "FLOP": int(line_split[10].split(":")[1][:-1]),
+                "duration": float(line_split[11].split(":")[1].replace("ms,", "")),
+                "mean": float(line_split[13].split(":")[1].replace("GFLOPS,", "")),
+                "stdev": float(line_split[15].split("=")[1].replace("GFLOPS", "")),
+            }
+        # Peak MFMA IOPs
+        elif line_split[1] == "MFMA" and "IOPs" in line:
+            mfma_iops_type = " ".join(line_split[:4])
+            gpu_data[mfma_iops_type] = {
+                "workgroupSize": int(line_split[7].split(":")[1][:-1]),
+                "workgroups": int(line_split[8].split(":")[1][:-1]),
+                "experiments": int(line_split[9].split(":")[1][:-1]),
+                "IOP": int(line_split[10].split(":")[1][:-1]),
+                "duration": float(line_split[11].split(":")[1].replace("ms,", "")),
+                "mean": float(line_split[13].split(":")[1].replace("GOPS,", "")),
+                "stdev": float(line_split[15].split("=")[1].replace("GOPS", "")),
+            }
+        else:
+            # Skip any other lines that do not match the expected format
+            continue
+    # Append the last GPU data
+    all_gpu_data.append(gpu_data)
+
+    # file structure:
+    # cluster/
+    #   node1/
+    #       cpu/ <- implement later
+    #       gpu1/
+    #           1.json
+    #           2.json
+    #           ...
+    #       gpu2/
+    #           1.json
+    #           2.json
+    #           ...
+    #       ...
+    #   node2/
+    #       ...
+    #   ...
+
+    # Write results to database
+    client = LocoDatabase("cluster")
+    # Later, iterate over nodes
+    # for node in nodes:
+    #     database = client[node]
+    # For now, single node
+    database = client[f"node{node_index}"]
+    for gpu_data in all_gpu_data:
+        collection = database[f"gpu{gpu_data['GPU Device']}"]
+        collection.insert_one(gpu_data)
+
+
+if __name__ == "__main__":
+    benchmark_node(0)
