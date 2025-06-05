@@ -5,8 +5,28 @@
 import subprocess
 import os
 
-# from locodb.utility import get_timestamp
 from locodb.directorydb import *
+
+
+def get_guid_dict():
+    """
+    Get the GUIDs of all GPUs in the system using `rocm-smi`.
+    Returns a dictionary mapping GPU index to GUID.
+    """
+    result = subprocess.run(
+        ["rocm-smi", "--showid"], capture_output=True, text=True, check=True
+    )
+    output = result.stdout.strip().splitlines()
+    guid_dict = {}
+    for line in output:
+        # Get lines with format
+        # GPU[0]          : GUID:                 19794
+        if "GUID" in line:
+            guid = int(line.split()[3].strip())
+            # assume single digit GPU index
+            gpu_index = int(line.split()[0][4])
+            guid_dict[gpu_index] = guid
+    return guid_dict
 
 
 def benchmark_node(node_index):
@@ -31,11 +51,6 @@ def benchmark_node(node_index):
         )
         output = result.stdout
     print("Finished running rocm-amdgpu-bench.")
-
-    # Log output as parsed
-    if not os.path.exists("temp.log"):
-        with open("temp.log", "w") as log_file:
-            log_file.write(output)
 
     # Convert into list of lines
     # Remove blank lines
@@ -145,8 +160,11 @@ def benchmark_node(node_index):
     #     database = client[node]
     # For now, single node
     database = client[f"node{node_index}"]
+
+    guid_dict = get_guid_dict()
+
     for gpu_data in all_gpu_data:
-        collection = database[f"gpu{gpu_data['GPU Device']}"]
+        collection = database[f"gpu-{guid_dict[gpu_data['GPU Device']]}"]
         collection.insert_one(gpu_data)
 
 
