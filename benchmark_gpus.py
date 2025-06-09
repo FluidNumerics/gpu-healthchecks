@@ -4,6 +4,7 @@
 # run `rocm-amdgpu-bench` command and parse the output
 import subprocess
 import os
+import argparse
 
 from locodb.directorydb import *
 
@@ -29,13 +30,14 @@ def get_guid_dict():
     return guid_dict
 
 
-def benchmark_node(node_index):
+def benchmark_node(node_name):
     """
     Run the `rocm-amdgpu-bench` command and parse its output.
     Returns a dictionary with GPU health status.
     """
 
     # timestamp = get_timestamp()
+    print("Node name:", node_name)
     path_to_bin = "rocm-amdgpu-bench/build/roofline"
 
     # Run the command
@@ -72,9 +74,8 @@ def benchmark_node(node_index):
             gpu_data["CUs"] = int(line_split[5])
         # Bandwidths
         elif line_split[1] == "BW,":
-            bw_type = " ".join(line_split[:2])  # e.g., "HBM BW"
-            bw_type = bw_type.replace(",", "")  # Remove comma
-
+            bw_type = " ".join(line_split[:2]).replace(",", "")
+            # e.g., "HBM BW"
             gpu_data[bw_type] = {
                 "workgroupSize": int(line_split[5].split(":")[1][:-1]),
                 "workgroups": int(line_split[6].split(":")[1][:-1]),
@@ -86,7 +87,8 @@ def benchmark_node(node_index):
             }
         # Peak FLOPs
         elif line_split[1] == "FLOPs":
-            flops_type = " ".join(line_split[:3])  # e.g., "Peak FLOPs (FP8)"
+            flops_type = " ".join(line_split[:3]).replace(",", "")
+            # e.g., "Peak FLOPs (FP8)"
             gpu_data[flops_type] = {
                 "workgroupSize": int(line_split[6].split(":")[1][:-1]),
                 "workgroups": int(line_split[7].split(":")[1][:-1]),
@@ -98,7 +100,8 @@ def benchmark_node(node_index):
             }
         # Peak IOPs
         elif line_split[1] == "IOPs":
-            iops_type = " ".join(line_split[:3])  # e.g., "Peak IOPs (INT8)"
+            iops_type = " ".join(line_split[:3]).replace(",", "")
+            # e.g., "Peak IOPs (INT8)"
             gpu_data[iops_type] = {
                 "workgroupSize": int(line_split[6].split(":")[1][:-1]),
                 "workgroups": int(line_split[7].split(":")[1][:-1]),
@@ -110,7 +113,8 @@ def benchmark_node(node_index):
             }
         # Peak MFMA FLOPs
         elif line_split[1] == "MFMA" and "FLOPs" in line:
-            mfma_flops_type = " ".join(line_split[:4])
+            mfma_flops_type = " ".join(line_split[:4]).replace(",", "")
+            # e.g., "Peak MFMA FLOPs (FP16)"
             gpu_data[mfma_flops_type] = {
                 "workgroupSize": int(line_split[7].split(":")[1][:-1]),
                 "workgroups": int(line_split[8].split(":")[1][:-1]),
@@ -122,7 +126,8 @@ def benchmark_node(node_index):
             }
         # Peak MFMA IOPs
         elif line_split[1] == "MFMA" and "IOPs" in line:
-            mfma_iops_type = " ".join(line_split[:4])
+            mfma_iops_type = " ".join(line_split[:4]).replace(",", "")
+            # e.g., "Peak MFMA IOPs (INT8)"
             gpu_data[mfma_iops_type] = {
                 "workgroupSize": int(line_split[7].split(":")[1][:-1]),
                 "workgroups": int(line_split[8].split(":")[1][:-1]),
@@ -161,7 +166,7 @@ def benchmark_node(node_index):
     # for node in nodes:
     #     database = client[node]
     # For now, single node
-    database = client[f"node{node_index}"]
+    database = client[node_name]
 
     guid_dict = get_guid_dict()
 
@@ -170,5 +175,20 @@ def benchmark_node(node_index):
         collection.insert_one(gpu_data)
 
 
+def main():
+    # input args to get hostname
+    parser = argparse.ArgumentParser(description="Benchmark AMD GPUs in a cluster.")
+    parser.add_argument(
+        "-H",
+        "--hostname",
+        type=str,
+        help="Name of the node to benchmark",
+    )
+    args = parser.parse_args()
+    print("hostname:", args.hostname)
+
+    benchmark_node(args.hostname)
+
+
 if __name__ == "__main__":
-    benchmark_node(0)
+    main()
