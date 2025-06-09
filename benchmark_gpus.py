@@ -4,6 +4,7 @@
 # run `rocm-amdgpu-bench` command and parse the output
 import subprocess
 import argparse
+import socket
 
 from locodb.directorydb import *
 
@@ -29,13 +30,14 @@ def get_guid_dict():
     return guid_dict
 
 
-def benchmark_node(node_name):
+def benchmark_node():
     """
     Run the `rocm-amdgpu-bench` command and parse its output.
     Returns a dictionary with GPU health status.
     """
 
     path_to_bin = "rocm-amdgpu-bench/build/roofline"
+    node_name = socket.gethostname()
 
     # Run the command
     print("Running rocm-amdgpu-bench...")
@@ -168,17 +170,7 @@ def benchmark_node(node_name):
 
 
 def main():
-    # input args to get hostname
-    parser = argparse.ArgumentParser(description="Benchmark AMD GPUs in a cluster.")
-    parser.add_argument(
-        "-H",
-        "--hostname",
-        type=str,
-        help="Name of the node to benchmark",
-    )
-    args = parser.parse_args()
-
-    benchmark_node(args.hostname)
+    benchmark_node()
 
 
 if __name__ == "__main__":

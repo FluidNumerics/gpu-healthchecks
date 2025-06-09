@@ -18,4 +18,4 @@ conda activate gpu-healthchecks
 conda env list
 
 # Run benchmark / health check
-python benchmark_gpus.py -H $HOSTNAME
+python benchmark_gpus.py
