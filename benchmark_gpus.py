@@ -3,7 +3,6 @@
 
 # run `rocm-amdgpu-bench` command and parse the output
 import subprocess
-import os
 import argparse
 
 from locodb.directorydb import *
@@ -36,22 +35,15 @@ def benchmark_node(node_name):
     Returns a dictionary with GPU health status.
     """
 
-    # timestamp = get_timestamp()
-    print("Node name:", node_name)
     path_to_bin = "rocm-amdgpu-bench/build/roofline"
 
     # Run the command
     print("Running rocm-amdgpu-bench...")
     # If temp.log is present, just read from that
-    if os.path.exists("temp.log"):
-        print("Using existing temp.log file.")
-        with open("temp.log", "r") as log_file:
-            output = log_file.read()
-    else:
-        result = subprocess.run(
-            [f"./{path_to_bin}"], capture_output=True, text=True, check=True
-        )
-        output = result.stdout
+    result = subprocess.run(
+        [f"./{path_to_bin}"], capture_output=True, text=True, check=True
+    )
+    output = result.stdout
     print("Finished running rocm-amdgpu-bench.")
 
     # Convert into list of lines
@@ -145,18 +137,18 @@ def benchmark_node(node_name):
 
     # file structure:
     # cluster/
-    #   node1/
+    #   <hostname 1>/
     #       cpu/ <- implement later
-    #       gpu1/
+    #       gpu-<GUID 1>/
     #           1.json
     #           2.json
     #           ...
-    #       gpu2/
+    #       gpu-<GUID 2>/
     #           1.json
     #           2.json
     #           ...
     #       ...
-    #   node2/
+    #   <hostname 2>/
     #       ...
     #   ...
 
@@ -185,7 +177,6 @@ def main():
         help="Name of the node to benchmark",
     )
     args = parser.parse_args()
-    print("hostname:", args.hostname)
 
     benchmark_node(args.hostname)
 
