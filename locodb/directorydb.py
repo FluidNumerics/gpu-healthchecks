@@ -46,15 +46,16 @@ class Collection:
 
     def insert_one(self, doc):
         """Insert a single document (store as a JSON file)."""
-        doc_id = doc.get(
-            "_id", str(len(list(self.path.iterdir())) + 1)
-        )  # Auto-generate ID if not given
-        doc["meta"] = {
-            "id": doc_id,
-            "timestamp": get_timestamp(),
-        }
-        # doc["_id"] = doc_id  # Ensure _id exists
-        # doc["_timestamp"] = get_timestamp()
+        # Auto-generate ID if not given
+        doc_id = doc.get("_id", str(len(list(self.path.iterdir())) + 1))
+        # Add meta field
+        # appends to any metadata already present in the document
+        doc.setdefault("meta", {}).update(
+            {
+                "id": doc_id,
+                "timestamp": get_timestamp(),
+            }
+        )
         with open(self.path / f"{doc_id}.json", "w") as f:
             json.dump(doc, f, indent=4)
         return {"_id": doc_id}

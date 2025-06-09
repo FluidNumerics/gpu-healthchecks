@@ -28,6 +28,28 @@ def get_guid_dict():
     return guid_dict
 
 
+def get_guid():
+    """
+    Assume single GPU system.
+    Get the GUID of the GPU in the system using `rocm-smi`.
+    Returns the GUID as an integer.
+    """
+    result = subprocess.run(
+        ["rocm-smi", "--showid"], capture_output=True, text=True, check=True
+    )
+    output = result.stdout.strip().splitlines()
+    guid = None
+    for line in output:
+        # Get lines with format
+        # GPU[0]          : GUID:                 19794
+        if "GUID" in line:
+            if guid is not None:
+                raise ValueError("Multiple GPUs found, expected single GPU system.")
+            else:
+                guid = int(line.split()[3].strip())
+    raise ValueError("No GPU found or rocm-smi command failed.")
+
+
 def benchmark_node():
     """
     Run the `rocm-amdgpu-bench` command and parse its output.
@@ -162,7 +184,7 @@ def benchmark_node():
 
     guid_dict = get_guid_dict()
 
-    for index, guid in guid_dict.items():
+    for gpu_data in all_gpu_data:
         collection = database[f"gpu-{guid_dict[gpu_data['GPU Device']]}"]
 
         metrics_list = [
@@ -190,7 +212,7 @@ def benchmark_node():
         ]
 
         gpu_stats = {
-            "mean_difference": {},
+            "mean_deviation": {},
             "stdev": {},
             "z_score": {},
         }
@@ -236,7 +258,7 @@ def benchmark_node():
                 population_stdev = 0
                 population_z_score = 0
 
-            gpu_stats["mean_difference"][metric] = (
+            gpu_stats["mean_deviation"][metric] = (
                 gpu_data[metric]["mean"] - population_mean
             )
             gpu_stats["stdev"][metric] = population_stdev
@@ -271,6 +293,11 @@ def benchmark_node():
             "metrics": gpu_data,
             "stats": gpu_stats,
             "health": gpu_health,
+        }
+        # add other metadata
+        metrics["meta"] = {
+            "hostname": node_name,
+            "GUID": guid_dict[gpu_data["GPU Device"]],
         }
         collection.insert_one(metrics)
 
