@@ -73,6 +73,8 @@ def benchmark_node(node_index):
         # Bandwidths
         elif line_split[1] == "BW,":
             bw_type = " ".join(line_split[:2])  # e.g., "HBM BW"
+            bw_type = bw_type.replace(",", "")  # Remove comma
+
             gpu_data[bw_type] = {
                 "workgroupSize": int(line_split[5].split(":")[1][:-1]),
                 "workgroups": int(line_split[6].split(":")[1][:-1]),
