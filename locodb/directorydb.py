@@ -49,8 +49,12 @@ class Collection:
         doc_id = doc.get(
             "_id", str(len(list(self.path.iterdir())) + 1)
         )  # Auto-generate ID if not given
-        doc["_id"] = doc_id  # Ensure _id exists
-        doc["_timestamp"] = get_timestamp()
+        doc["meta"] = {
+            "id": doc_id,
+            "timestamp": get_timestamp(),
+        }
+        # doc["_id"] = doc_id  # Ensure _id exists
+        # doc["_timestamp"] = get_timestamp()
         with open(self.path / f"{doc_id}.json", "w") as f:
             json.dump(doc, f, indent=4)
         return {"_id": doc_id}

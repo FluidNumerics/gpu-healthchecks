@@ -1,9 +1,7 @@
 # Python file to run `rocm-amdgpu-bench` command for GPU health checks.
 # and parses the output into a json
 
-# run `rocm-amdgpu-bench` command and parse the output
 import subprocess
-import argparse
 import socket
 
 from locodb.directorydb import *
@@ -164,13 +162,122 @@ def benchmark_node():
 
     guid_dict = get_guid_dict()
 
+    for index, guid in guid_dict.items():
+        collection = database[f"gpu-{guid_dict[gpu_data['GPU Device']]}"]
+
+        metrics_list = [
+            "HBM BW",
+            "MALL BW",
+            "L2 BW",
+            "L1 BW",
+            "LDS BW",
+            "Peak FLOPs (FP8)",
+            "Peak FLOPs (FP16)",
+            "Peak FLOPs (BF16)",
+            "Peak FLOPs (FP32)",
+            "Peak FLOPs (FP64)",
+            "Peak IOPs (INT8)",
+            "Peak IOPs (INT32)",
+            "Peak IOPs (INT64)",
+            "Peak MFMA FLOPs (F4)",
+            "Peak MFMA FLOPs (F6)",
+            "Peak MFMA FLOPs (F8)",
+            "Peak MFMA FLOPs (F16)",
+            "Peak MFMA FLOPs (BF16)",
+            "Peak MFMA FLOPs (F32)",
+            "Peak MFMA FLOPs (F64)",
+            "Peak MFMA IOPs (I8)",
+        ]
+
+        gpu_stats = {
+            "mean_difference": {},
+            "stdev": {},
+            "z_score": {},
+        }
+
+        gpu_health = {
+            "Outlier": False,
+            "Outlier Metrics": [],
+            "Unhealthy": False,
+            "Unhealthy Metrics": [],
+            "Message": "",
+        }
+
+        population_benchmarks = collection.find()
+        population = len(population_benchmarks)
+        for metric in metrics_list:
+            if population != 0:
+                population_mean = (
+                    sum(
+                        [
+                            benchmark["metrics"][metric]["mean"]
+                            for benchmark in population_benchmarks
+                        ]
+                    )
+                    / population
+                )
+                population_stdev = (
+                    sum(
+                        [
+                            (benchmark["metrics"][metric]["mean"] - population_mean)
+                            ** 2
+                            for benchmark in population_benchmarks
+                        ]
+                    )
+                    / population
+                ) ** 0.5
+                population_z_score = (
+                    (gpu_data[metric]["mean"] - population_mean) / population_stdev
+                    if population_stdev != 0
+                    else 0
+                )
+            else:
+                population_mean = 0
+                population_stdev = 0
+                population_z_score = 0
+
+            gpu_stats["mean_difference"][metric] = (
+                gpu_data[metric]["mean"] - population_mean
+            )
+            gpu_stats["stdev"][metric] = population_stdev
+            gpu_stats["z_score"][metric] = population_z_score
+
+            if abs(gpu_data[metric]["mean"] - population_mean) > 3 * population_stdev:
+                # Mark as outlier if check lands past 3 sigma
+                # Note: This does not necessarily mean the GPU is unhealthy
+                # (should correlate to 0.3% of all health checks)
+                if population > 30:
+                    gpu_health["Outlier"] = True
+                    gpu_health["Outlier Metrics"].append(metric)
+                    # Mark as unhealthy if the metric is >= 5 sigma
+                    # (should correlate to 0.00006% of health checks)
+                    if (
+                        abs(gpu_data[metric]["mean"] - population_mean)
+                        > 5 * population_stdev
+                    ):
+                        gpu_health["Unhealthy"] = True
+                        gpu_health["Unhealthy Metrics"].append(metric)
+                        gpu_health["Message"] = (
+                            "Health metric exceeds 5 sigma threshold. Likely unhealthy GPU."
+                        )
+                else:
+                    gpu_health["Message"] = (
+                        f"Population size ({population}) is too small to determine outliers."
+                    )
+
     for gpu_data in all_gpu_data:
         collection = database[f"gpu-{guid_dict[gpu_data['GPU Device']]}"]
-        collection.insert_one(gpu_data)
+        metrics = {
+            "metrics": gpu_data,
+            "stats": gpu_stats,
+            "health": gpu_health,
+        }
+        collection.insert_one(metrics)
 
 
 def main():
-    benchmark_node()
+    for _ in range(20):
+        benchmark_node()
 
 
 if __name__ == "__main__":
