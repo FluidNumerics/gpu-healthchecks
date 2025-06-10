@@ -1,0 +1,280 @@
+{
+    "metrics": {
+        "GPU Device": 0,
+        "gfx_version": "gfx942",
+        "CUs": 228,
+        "HBM BW": {
+            "workgroupSize": 256,
+            "workgroups": 6225920,
+            "experiments": 100,
+            "traffic": 25501368320,
+            "duration": 6.8,
+            "mean": 3759.4,
+            "stdev": 10.2
+        },
+        "MALL BW": {
+            "workgroupSize": 256,
+            "workgroups": 38912,
+            "experiments": 100,
+            "traffic": 2611340115968,
+            "duration": 531.4,
+            "mean": 4941.1,
+            "stdev": 22.5
+        },
+        "L2 BW": {
+            "workgroupSize": 256,
+            "workgroups": 38912,
+            "experiments": 100,
+            "traffic": 1632087572480,
+            "duration": 77.5,
+            "mean": 21054.4,
+            "stdev": 11.9
+        },
+        "L1 BW": {
+            "workgroupSize": 256,
+            "workgroups": 38912,
+            "experiments": 100,
+            "traffic": 127506841600,
+            "duration": 4.4,
+            "mean": 28793.1,
+            "stdev": 35.7
+        },
+        "LDS BW": {
+            "workgroupSize": 256,
+            "workgroups": 38912,
+            "experiments": 100,
+            "traffic": 79691776000,
+            "duration": 1.6,
+            "mean": 50451.5,
+            "stdev": 157.7
+        },
+        "Peak FLOPs (FP8)": {
+            "workgroupSize": 256,
+            "workgroups": 38912,
+            "experiments": 100,
+            "FLOP": 1081258016768,
+            "duration": 17.3,
+            "mean": 62531.6,
+            "stdev": 17.6
+        },
+        "Peak FLOPs (FP16)": {
+            "workgroupSize": 256,
+            "workgroups": 38912,
+            "experiments": 100,
+            "FLOP": 530428461056,
+            "duration": 17.8,
+            "mean": 29723.8,
+            "stdev": 9.0
+        },
+        "Peak FLOPs (BF16)": {
+            "workgroupSize": 256,
+            "workgroups": 38912,
+            "experiments": 100,
+            "FLOP": 530428461056,
+            "duration": 115.302,
+            "mean": 4598.5,
+            "stdev": 1.4
+        },
+        "Peak FLOPs (FP32)": {
+            "workgroupSize": 256,
+            "workgroups": 38912,
+            "experiments": 100,
+            "FLOP": 265214230528,
+            "duration": 2.31,
+            "mean": 114323.1,
+            "stdev": 697.5
+        },
+        "Peak FLOPs (FP64)": {
+            "workgroupSize": 256,
+            "workgroups": 38912,
+            "experiments": 100,
+            "FLOP": 122406567936,
+            "duration": 1.3,
+            "mean": 94893.4,
+            "stdev": 854.3
+        },
+        "Peak IOPs (INT8)": {
+            "workgroupSize": 256,
+            "workgroups": 38912,
+            "experiments": 100,
+            "IOP": 1081258016768,
+            "duration": 17.3,
+            "mean": 62498.4,
+            "stdev": 19.1
+        },
+        "Peak IOPs (INT32)": {
+            "workgroupSize": 256,
+            "workgroups": 38912,
+            "experiments": 100,
+            "IOP": 265214230528,
+            "duration": 4.3,
+            "mean": 61491.8,
+            "stdev": 49.7
+        },
+        "Peak IOPs (INT64)": {
+            "workgroupSize": 256,
+            "workgroups": 38912,
+            "experiments": 100,
+            "IOP": 122406567936,
+            "duration": 7.6,
+            "mean": 16195.3,
+            "stdev": 5.0
+        },
+        "Peak MFMA FLOPs (F4)": {
+            "workgroupSize": 256,
+            "workgroups": 38912,
+            "experiments": 1,
+            "FLOP": 0,
+            "duration": 0.0,
+            "mean": 0.0,
+            "stdev": 0.0
+        },
+        "Peak MFMA FLOPs (F6)": {
+            "workgroupSize": 256,
+            "workgroups": 38912,
+            "experiments": 1,
+            "FLOP": 0,
+            "duration": 0.0,
+            "mean": 0.0,
+            "stdev": 0.0
+        },
+        "Peak MFMA FLOPs (F8)": {
+            "workgroupSize": 256,
+            "workgroups": 38912,
+            "experiments": 100,
+            "FLOP": 10200547328000,
+            "duration": 6.0,
+            "mean": 1696668.4,
+            "stdev": 8337.3
+        },
+        "Peak MFMA FLOPs (F16)": {
+            "workgroupSize": 256,
+            "workgroups": 38912,
+            "experiments": 100,
+            "FLOP": 5100273664000,
+            "duration": 6.1,
+            "mean": 833418.4,
+            "stdev": 877.8
+        },
+        "Peak MFMA FLOPs (BF16)": {
+            "workgroupSize": 256,
+            "workgroups": 38912,
+            "experiments": 100,
+            "FLOP": 2550136832000,
+            "duration": 5.6,
+            "mean": 458563.6,
+            "stdev": 858.5
+        },
+        "Peak MFMA FLOPs (F32)": {
+            "workgroupSize": 256,
+            "workgroups": 38912,
+            "experiments": 100,
+            "FLOP": 1275068416000,
+            "duration": 10.9,
+            "mean": 117082.6,
+            "stdev": 130.1
+        },
+        "Peak MFMA FLOPs (F64)": {
+            "workgroupSize": 256,
+            "workgroups": 38912,
+            "experiments": 100,
+            "FLOP": 637534208000,
+            "duration": 5.4,
+            "mean": 117298.4,
+            "stdev": 60.7
+        },
+        "Peak MFMA IOPs (I8)": {
+            "workgroupSize": 256,
+            "workgroups": 38912,
+            "experiments": 100,
+            "IOP": 5100273664000,
+            "duration": 5.8,
+            "mean": 881852.5,
+            "stdev": 1513.3
+        }
+    },
+    "stats": {
+        "mean_deviation": {
+            "HBM BW": -2.75,
+            "MALL BW": -2.9374999999990905,
+            "L2 BW": 0.4500000000043656,
+            "L1 BW": 3.6749999999992724,
+            "LDS BW": -31.450000000004366,
+            "Peak FLOPs (FP8)": 6.61250000000291,
+            "Peak FLOPs (FP16)": 2.724999999994907,
+            "Peak FLOPs (BF16)": -0.4375,
+            "Peak FLOPs (FP32)": -115.06249999998545,
+            "Peak FLOPs (FP64)": -48.51250000001164,
+            "Peak IOPs (INT8)": -10.950000000004366,
+            "Peak IOPs (INT32)": 16.137500000004366,
+            "Peak IOPs (INT64)": 1.6999999999989086,
+            "Peak MFMA FLOPs (F4)": 0.0,
+            "Peak MFMA FLOPs (F6)": 0.0,
+            "Peak MFMA FLOPs (F8)": -1952.375,
+            "Peak MFMA FLOPs (F16)": -497.48749999993015,
+            "Peak MFMA FLOPs (BF16)": -230.26250000001164,
+            "Peak MFMA FLOPs (F32)": 6.0125000000261934,
+            "Peak MFMA FLOPs (F64)": 42.04999999998836,
+            "Peak MFMA IOPs (I8)": -130.625
+        },
+        "stdev": {
+            "HBM BW": 7.375466086966999,
+            "MALL BW": 3.2657072358067722,
+            "L2 BW": 3.621463792446617,
+            "L1 BW": 11.104137742301754,
+            "LDS BW": 23.647304286113226,
+            "Peak FLOPs (FP8)": 10.148822283891208,
+            "Peak FLOPs (FP16)": 5.405032377331279,
+            "Peak FLOPs (BF16)": 1.1988927183030733,
+            "Peak FLOPs (FP32)": 43.87963472671685,
+            "Peak FLOPs (FP64)": 67.60904964388875,
+            "Peak IOPs (INT8)": 14.343029666007974,
+            "Peak IOPs (INT32)": 21.043403806181058,
+            "Peak IOPs (INT64)": 3.3267852350278777,
+            "Peak MFMA FLOPs (F4)": 0.0,
+            "Peak MFMA FLOPs (F6)": 0.0,
+            "Peak MFMA FLOPs (F8)": 766.785714443764,
+            "Peak MFMA FLOPs (F16)": 294.8970813584877,
+            "Peak MFMA FLOPs (BF16)": 97.22517597695558,
+            "Peak MFMA FLOPs (F32)": 30.883629866805936,
+            "Peak MFMA FLOPs (F64)": 32.124834629924365,
+            "Peak MFMA IOPs (I8)": 340.8598456477377
+        },
+        "z_score": {
+            "HBM BW": -0.3728577919786596,
+            "MALL BW": -0.8994988796885829,
+            "L2 BW": 0.12425914652051541,
+            "L1 BW": 0.33095771011549874,
+            "LDS BW": -1.3299613190359816,
+            "Peak FLOPs (FP8)": 0.6515534330026301,
+            "Peak FLOPs (FP16)": 0.5041597921639774,
+            "Peak FLOPs (BF16)": -0.3649200577506573,
+            "Peak FLOPs (FP32)": -2.622230123760071,
+            "Peak FLOPs (FP64)": -0.7175444745272608,
+            "Peak IOPs (INT8)": -0.7634370321324188,
+            "Peak IOPs (INT32)": 0.7668673827028075,
+            "Peak IOPs (INT64)": 0.5110038309956197,
+            "Peak MFMA FLOPs (F4)": 0,
+            "Peak MFMA FLOPs (F6)": 0,
+            "Peak MFMA FLOPs (F8)": -2.546180716755107,
+            "Peak MFMA FLOPs (F16)": -1.6869868555774756,
+            "Peak MFMA FLOPs (BF16)": -2.368342331975709,
+            "Peak MFMA FLOPs (F32)": 0.1946824264491168,
+            "Peak MFMA FLOPs (F64)": 1.3089561544643307,
+            "Peak MFMA IOPs (I8)": -0.38322202414829076
+        }
+    },
+    "health": {
+        "Outlier": false,
+        "Outlier Metrics": [],
+        "Unhealthy": false,
+        "Unhealthy Metrics": [],
+        "Message": ""
+    },
+    "meta": {
+        "hostname": "nicholson",
+        "GUID": 7426,
+        "id": "9",
+        "timestamp": "2025-06-09 20:55:22 UTC"
+    }
+}
