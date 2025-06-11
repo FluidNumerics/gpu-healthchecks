@@ -303,8 +303,7 @@ def benchmark_node():
 
 
 def main():
-    for _ in range(20):
-        benchmark_node()
+    benchmark_node()
 
 
 if __name__ == "__main__":
